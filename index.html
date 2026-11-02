@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+    .demo-guide {
+      box-sizing: border-box;
+      position: fixed;
+      inset: 0 0 0 auto;
+      margin: 0;
+      width: 420px;
+      height: 100vh;
+      height: 100dvh;
+      max-height: none;
+      max-width: none;
+      padding: 0;
+      border: 1px solid var(--cp-border);
+      border-radius: 0;
+      z-index: 30;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.7;
+    }
+    .demo-guide[open] { display: flex; flex-direction: column; }
+    body.guide-floating .demo-guide { inset: auto; border-radius: 10px; box-shadow: var(--cp-shadow); }
+    body.guide-open.guide-floating #app { width: 100%; height: 100dvh; }
+    body.guide-open.guide-floating .toast { left: 50%; max-width: calc(100% - 32px); bottom: 20px; }
+    .guide-launcher { position: fixed; right: 16px; bottom: 16px; z-index: 36; display: flex; gap: 12px; align-items: center; max-width: calc(100% - 32px); padding: 10px 16px; border: 1px solid var(--cp-border); border-radius: 10px; background: var(--cp-surface); color: var(--cp-text); box-shadow: var(--cp-shadow); font: 600 14px "Segoe UI", Aptos, Calibri, sans-serif; cursor: pointer; }
+    .guide-launcher[hidden] { display: none; }
+    .guide-launcher:focus-visible { outline: 3px solid var(--cp-accent); outline-offset: 2px; }
+    #guide-launcher-step { color: var(--cp-text-muted); }
+    #guide-titlebar { cursor: move; touch-action: none; user-select: none; flex-wrap: nowrap; flex-shrink: 0; padding: 8px 12px; gap: 8px; }
+    #guide-titlebar h2 { font-size: 0.95rem; flex: 1; min-width: 0; line-height: 1.4; }
+    .guide-window-controls { display: flex; align-self: center; flex-shrink: 0; gap: 2px; }
+    #guide-titlebar .guide-window-controls button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 4px; background: var(--cp-surface); touch-action: manipulation; }
+    #guide-titlebar .guide-window-controls button:hover { background: var(--cp-highlight); color: var(--cp-accent); }
+    #guide-titlebar .guide-window-controls button[aria-pressed="true"] { background: var(--cp-accent-soft); color: var(--cp-accent); }
+    .guide-window-controls svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; pointer-events: none; }
+    [data-action="guideMaximize"] .guide-restore-icon { display: none; }
+    [data-action="guideMaximize"][aria-pressed="true"] .guide-maximize-icon { display: none; }
+    [data-action="guideMaximize"][aria-pressed="true"] .guide-restore-icon { display: block; }
+    .guide-controls .guide-default { margin-top: 4px; padding: 4px 8px; font-size: 0.8rem; background: var(--cp-surface); }
+    .guide-resize { position: absolute; z-index: 2; touch-action: none; }
+    .guide-resize[data-guide-resize="n"], .guide-resize[data-guide-resize="s"] { left: 12px; right: 12px; height: 8px; cursor: ns-resize; }
+    .guide-resize[data-guide-resize="n"] { top: 0; }
+    .guide-resize[data-guide-resize="s"] { bottom: 0; }
+    .guide-resize[data-guide-resize="e"], .guide-resize[data-guide-resize="w"] { top: 12px; bottom: 12px; width: 8px; cursor: ew-resize; }
+    .guide-resize[data-guide-resize="e"] { right: 0; }
+    .guide-resize[data-guide-resize="w"] { left: 0; }
+    .guide-resize:is([data-guide-resize="nw"], [data-guide-resize="ne"], [data-guide-resize="sw"], [data-guide-resize="se"]) { width: 12px; height: 12px; }
+    .guide-resize[data-guide-resize="nw"] { left: 0; top: 0; cursor: nwse-resize; }
+    .guide-resize[data-guide-resize="ne"] { right: 0; top: 0; cursor: nesw-resize; }
+    .guide-resize[data-guide-resize="sw"] { left: 0; bottom: 0; cursor: nesw-resize; }
+    .guide-resize[data-guide-resize="se"] { right: 0; bottom: 0; cursor: nwse-resize; border-right: 3px solid var(--cp-border-strong); border-bottom: 3px solid var(--cp-border-strong); }
+    body.guide-open #app { width: calc(100% - 420px); height: 100dvh; overflow: auto; }
+    body.guide-open .toast { left: calc((100% - 420px) / 2); max-width: calc(100% - 452px); }
+    body.guide-open .public-header, body.guide-open .topbar, body.guide-open .top-actions { flex-wrap: wrap; }
+    body.guide-open .login-hero, body.guide-open .two-column { grid-template-columns: 1fr; }
+    body.guide-open .login-card { flex-wrap: wrap; }
+    body.guide-open .metric-grid, body.guide-open .product-grid, body.guide-open .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .demo-guide header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--cp-border); }
+    .demo-guide h2 { margin: 0; color: var(--cp-accent); font-size: 1.25rem; }
+    .demo-guide h3 { margin: 8px 0 16px; font-size: 1.3rem; }
+    .guide-controls { padding: 12px 20px; background: var(--cp-surface-soft); }
+    .guide-controls label { display: block; font-weight: 600; }
+    .guide-controls select { box-sizing: border-box; width: 100%; margin: 4px 0 8px; padding: 8px; border: 1px solid var(--cp-border); border-radius: 6px; background: var(--cp-surface); color: var(--cp-text); font: inherit; }
+    .guide-controls p { margin: 0; font-size: 0.85rem; }
+    .guide-content { flex: 1; overflow-y: auto; min-height: 0; padding: 16px 24px; overflow-wrap: anywhere; }
+    .guide-controls, .demo-guide footer { flex-shrink: 0; }
+    .guide-step[hidden] { display: none; }
+    .guide-step ol { padding-left: 24px; }
+    .guide-step li { margin-bottom: 12px; }
+    .guide-role { display: inline-block; margin: 0; padding: 2px 10px; background: var(--cp-accent-soft); color: var(--cp-text); border-radius: 6px; }
+    .guide-result { border-left: 4px solid var(--cp-success); padding: 10px 14px; background: var(--cp-surface-soft); }
+    .guide-warning { border-left: 4px solid var(--cp-warning); padding: 10px 14px; }
+    .demo-guide footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--cp-border); }
+    .demo-guide footer p { margin: 0; width: 100%; font-size: 0.85rem; }
+    .demo-guide p { color: var(--cp-text-muted); }
+    .demo-guide button { padding: 8px 12px; border: 1px solid var(--cp-border); border-radius: 0.625rem; background: var(--cp-surface-soft); color: var(--cp-text); font: inherit; cursor: pointer; }
+    .demo-guide button:disabled { opacity: 0.45; cursor: default; }
+    .demo-guide :is(button, select):focus-visible { outline: 3px solid var(--cp-accent); outline-offset: 2px; }
+    .demo-guide .guide-operate { background: var(--cp-accent); color: var(--cp-accent-fg); }
+    .demo-guide code { font-family: Consolas, "Courier New", Courier, monospace; }
+    .guide-highlight { outline: 3px solid var(--cp-accent) !important; outline-offset: 4px; }
+    .guide-pointer { position: fixed; z-index: 35; pointer-events: none; background: var(--cp-accent); color: var(--cp-accent-fg); padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 13px; }
+    .demo-guide footer #guide-location { display: block; margin: 4px 0; font-size: 0.8rem; }
+    .demo-guide footer #guide-location:empty { display: none; }
+    .guide-controls [hidden], .demo-guide button[hidden] { display: none; }
+    @media (max-width: 1199px) {
+      .demo-guide { inset: auto 0 0; width: 100%; height: 55vh; height: 55dvh; }
+      body.guide-open #app { width: 100%; height: 45vh; height: 45dvh; }
+      body.guide-open .toast { left: 50%; max-width: calc(100% - 32px); bottom: 56dvh; }
+      .demo-guide header { padding: 12px; }
+      .demo-guide header h2 { font-size: 1rem; }
+      .demo-guide header button { flex-shrink: 0; white-space: nowrap; }
+      .guide-controls { padding: 8px 12px; }
+      .guide-controls label, .guide-controls select { font-size: 0.875rem; }
+      .guide-controls p { display: none; }
+      .guide-content { padding: 12px 16px; }
+      .demo-guide footer { padding: 10px 12px; }
+      .demo-guide footer p { display: none; }
+      .demo-guide .guide-operate { width: 100%; }
+    }
+    @media (max-width: 760px) {
+      .demo-guide { inset: 8px; width: calc(100% - 16px); height: calc(100dvh - 16px); border-radius: 10px; }
+      body.guide-open #app { width: 100%; height: 100dvh; }
+      .guide-resize { display: none; }
+      #guide-titlebar { cursor: default; touch-action: auto; }
+      .demo-guide footer .guide-operate { width: 100%; }
+      body.guide-open .metric-grid, body.guide-open .product-grid, body.guide-open .quick-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-height: 600px) {
+      .guide-controls { max-height: 25dvh; overflow-y: auto; }
+      #guide-titlebar { padding: 8px 12px; gap: 4px; }
+      .demo-guide footer { padding: 6px 12px; }
+      .demo-guide footer p, .guide-controls p { display: none; }
+    }
+    @media print {
+      .demo-guide { display: none !important; }
+      .guide-pointer, .guide-launcher { display: none !important; }
+      .guide-highlight { outline: none !important; }
+      body.guide-open #app { width: 100%; height: auto; overflow: visible; }
+    }
+  </style>
+  <title>校方責任險協同服務平台 Demo</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./data.js"></script>
+  <script defer src="./reports.js"></script>
+  <script defer src="./workflows.js"></script>
+  <script defer src="./campus.js"></script>
+  <script defer src="./campus-pages.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <div id="app" aria-live="polite"></div>
+  <div id="toast" class="toast" role="status" aria-live="assertive"></div>
+  <div id="guide-pointer" class="guide-pointer" hidden aria-hidden="true"></div>
+  <button id="guide-launcher" class="guide-launcher" type="button" data-action="reopenGuide" aria-controls="demo-guide" aria-expanded="false" hidden>操作指南 <span id="guide-launcher-step">第 1/1 步</span> · 展开</button>
+  <dialog id="demo-guide" class="demo-guide" aria-labelledby="demo-guide-title" data-guide-version="windows-controls-v3">
+    <header id="guide-titlebar">
+      <h2 id="demo-guide-title">Demo 说明书 · 一步一步做</h2>
+      <div class="guide-window-controls">
+        <button type="button" data-action="closeGuide" title="最小化到右下角，保留当前步骤" aria-label="最小化操作指南" autofocus><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 12h12"/></svg></button>
+        <button type="button" data-action="guideMaximize" title="最大化操作指南" aria-label="最大化操作指南" aria-pressed="false"><svg class="guide-maximize-icon" viewBox="0 0 18 18" aria-hidden="true"><rect x="3" y="3" width="12" height="12"/></svg><svg class="guide-restore-icon" viewBox="0 0 18 18" aria-hidden="true"><path d="M6 6V3h9v9h-3"/><rect x="3" y="6" width="9" height="9"/></svg></button>
+      </div>
+    </header>
+    <div class="guide-controls">
+      <label for="guide-topic">你要做什么？</label>
+      <select id="guide-topic">
+        <option value="start">第一次使用：先看这里</option>
+        <option value="inspection">① 巡检与整改（不需要先投保）</option>
+        <option value="insurance">② 投保与承保</option>
+        <option value="claim">③ 报案与理赔（先完成②）</option>
+        <option value="help">找不到按钮 / 演示边界</option>
+      </select>
+      <label for="guide-step">操作步骤（做过的可以直接跳过）</label>
+      <select id="guide-step"></select>
+      <label id="guide-task-label" for="guide-task" hidden>继续哪张任务？<select id="guide-task"></select></label>
+      <p>可拖标题移动、拖边缘或角落调宽高。右上角横线最小化、方框最大化；重叠方框还原放大前窗口。小屏自适应。从右下角继续原步骤；阅读位置不代表业务进度，刷新后重置。</p>
+      <button type="button" class="guide-default" data-action="guideRestore" title="重置窗口尺寸和位置，不改变步骤">恢复默认尺寸／位置</button>
+    </div>
+    <div class="guide-content">
+      <section class="guide-step" data-guide-topic="start">
+        <h3 tabindex="-1">先准备，再选一条流程</h3>
+        <ol>
+          <li>如果拿到 ZIP，先完整解压，用 Edge 或 Chrome 打开里面的 <code>index.html</code>。单个 HTML 文件可以直接打开，不需要安装开发工具。</li>
+          <li>在旁边的操作页面登录；小屏可先收起指南，再从右下角展开继续。若已登录，先点右上角「登出」。登录页如有「啟用v2合成場景」，点它；没有就跳过。无需输入密码。</li>
+          <li>在说明书的「你要做什么？」选择「① 巡检与整改」，点「带我到这一步 · 箭头提示」。需要换角色时先请你确认；成功定位后指南收起到右下角，箭头标出要点的按钮或输入框，不会替你提交。看到完成标志后从右下角展开，再点「下一步」。</li>
+        </ol>
+        <p><strong>怎么换角色：</strong>点右上角「登出」，找到指定姓名的卡片，点卡片里的「以此角色進入」。主管部门选「省級教育監管員」；第三方选「巡檢服務專員」；学校选「青禾中學安全管理員」；保险公司选「保險核保經理」。</p>
+        <p class="guide-warning">有旧进度也能继续：在上方步骤下拉框选择还没做的步骤。不确定进度时先看「找不到按钮」，不要急着重设。重设会清除当前浏览器的演示操作。</p>
+      </section>
+
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">当前角色：主管部门 · 省級教育監管員</p>
+        <h3 tabindex="-1">派一张青禾主校区巡检任务</h3>
+        <ol>
+          <li>在操作区，若已登录其他角色，先「登出」；在「省級教育監管員」卡片点「以此角色進入」。</li>
+          <li>点左侧「平台服務管理（演示代辦）」。找到状态为「生效」的秋季计划，不用新建计划，也不用先买保险。</li>
+          <li>在该计划的「計畫授權校區」选「青禾中學主校區」，点一次「按計畫派單」。</li>
+          <li>点左侧「校園巡檢與整改」，找到「青禾中學主校區」任务卡，记下标题里的完整 <code>TASK-数字</code> 编号。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>这张任务卡显示「待接單」。后面始终找这个编号，不再派单。PLAN 是计划，RPT 是报告，都不是任务编号。</p>
+        <p>已有青禾主校区任务？不要重复派单，直接跳到符合任务状态的步骤。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">换角色：第三方 · 巡檢服務專員</p>
+        <h3 tabindex="-1">接下刚才的任务</h3>
+        <ol>
+          <li>在操作区，点右上角「登出」。在「巡檢服務專員」卡片点「以此角色進入」。</li>
+          <li>点左侧「巡檢任務」，找标题带刚才 TASK 编号的「青禾中學主校區」卡片，不要选背景学校。</li>
+          <li>在这张卡片点「接受巡檢任務」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>任务变成「執行中」，下方出现22项检查表。此时结果是「待錄入」，不是已经检查完了。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">保持第三方角色 · 同一张任务卡</p>
+        <h3 tabindex="-1">填入这次演示用的检查结果</h3>
+        <ol>
+          <li>在22项检查表上方，点「載入合成示例（覆蓋草稿前確認）」。</li>
+          <li>浏览器弹出确认框时，点确定。此操作会覆盖这张任务的检查草稿，只用于合成演示。</li>
+          <li>看一下 C02：结果应为「未檢查」；C05、C13 是这次要处理的两项隐患，先不要改它们。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>检查表有了不同结果，不是全部合格。C02故意留作下一段的“补查”演示。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">保持第三方角色 · 同一张任务卡</p>
+        <h3 tabindex="-1">提交第一版报告</h3>
+        <ol>
+          <li>滚到这张任务的22项检查表最底部。</li>
+          <li>点「提交結構化報告」，不要只点「保存草稿」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>任务显示「報告已提交」，出现「查看報告… v1」和 C05、C13 两张隐患卡。v1就是第一版；C02未检不会被当成已完成。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">换角色：主管部门 · 省級教育監管員</p>
+        <h3 tabindex="-1">试一次验收：看到未检拦截是正常的</h3>
+        <ol>
+          <li>在操作区，「登出」；在「省級教育監管員」卡片点「以此角色進入」。点左侧「校園巡檢與整改」，找同一 TASK 编号。</li>
+          <li>在任务内找「主管部門：驗收此現場報告」。第1步下拉选「通過現場及報告驗收」，第2步理由保留预填内容。</li>
+          <li>点「第3步：提交現場報告驗收」，留意页面短暂出现的提示。</li>
+        </ol>
+        <p class="guide-result"><strong>应看到：</strong>「仍有未檢／缺失，請補查並更正報告後再完整驗收。」这是演示要展示的拦截，不是操作错了。继续下一步补查，不用反复点验收。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">换角色：第三方 · 巡檢服務專員</p>
+        <h3 tabindex="-1">补上 C02 的检查结果</h3>
+        <ol>
+          <li>在操作区，「登出」；用「巡檢服務專員」进入。点左侧「巡檢任務」，找到同一 TASK 编号。</li>
+          <li>点「更正／補查並出新版本」。在展开的表单找到「C02 · 雨棚外牆吊頂及懸掛物可見鬆脫」。</li>
+          <li>把 C02 的「檢查結果」改成「合格」。</li>
+          <li>把 C02 的「觀察事實／不適用或未檢原因及補查安排」替换为下面这句合成描述，其他项目不改。</li>
+        </ol>
+        <p><code>合成補查：雨棚指定地面目視點位完成，未見可見鬆脫，限本次觀察。</code></p>
+        <p class="guide-result"><strong>完成标志：</strong>C02表单已改好。还没提交，下一步要提交新版本。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">保持第三方角色 · 同一张任务卡</p>
+        <h3 tabindex="-1">提交第二版报告</h3>
+        <ol>
+          <li>滚到检查表最底部，点「提交結構化報告」。</li>
+          <li>在任务卡下方找到「查看報告… v2」。旧版应保留在「歷史報告… v1」中。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>出现v2（第二版），C05、C13仍各只有一张隐患卡。补查不会覆盖旧报告，也不会重复生成隐患。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">换角色：主管部门 · 省級教育監管員</p>
+        <h3 tabindex="-1">验收补查后的报告</h3>
+        <ol>
+          <li>在操作区，「登出」；用「省級教育監管員」进入。点左侧「校園巡檢與整改」，找到同一 TASK 编号。</li>
+          <li>在「主管部門：驗收此現場報告」内，第1步选「通過現場及報告驗收」，保留第2步预填理由。</li>
+          <li>点「第3步：提交現場報告驗收」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>卡片显示「現場交付：已驗收」，验收表单消失。这里只确认报告交付；两项隐患还没解决，资金也没有支付。</p>
+        <p>如果已经显示「已驗收」，本步不用再做，直接下一步。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">换角色：学校 · 青禾中學安全管理員</p>
+        <h3 tabindex="-1">学校确认收到这份报告</h3>
+        <ol>
+          <li>在操作区，「登出」；在「青禾中學安全管理員」卡片点「以此角色進入」。</li>
+          <li>点左侧「校園巡檢與整改」，找到同一 TASK 编号的青禾主校区任务。</li>
+          <li>点「查看報告… v2」展开当前报告，滚到报告底部，点「收悉此報告（非責任認定）」。不要展开历史v1。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>提示「已記錄報告收悉。」按钮消失。收悉只是“收到了”，不表示学校承认法律责任。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">保持学校角色 · 同一张任务卡</p>
+        <h3 tabindex="-1">先确认 C05 由谁、何时整改</h3>
+        <ol>
+          <li>在任务卡的报告区域下方，找到标题含「／C05」的隐患卡，不是报告表格里的C05那一行。</li>
+          <li>这张卡片内的主责、协同、期限、临时措施已有合成示例，保留预填内容。</li>
+          <li>点这张 C05 卡片里的「確認責任及期限」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>C05从「待確認」变为「待整改」，出现「提交整改待複查」按钮。这里记录整改分工，不是判定保险或法律责任。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">保持学校角色 · 同一张任务卡</p>
+        <h3 tabindex="-1">再确认 C13 由谁、何时整改</h3>
+        <ol>
+          <li>找到标题含「／C13」的另一张隐患卡。</li>
+          <li>保留这张卡片内预填的主责、协同、期限和临时措施。</li>
+          <li>点 C13 卡片里的「確認責任及期限」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>C13变为「待整改」，出现「專業轉介與合成文件元資料」。下一步先补专业结论，不要急着提交整改。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">保持学校角色 · C13 隐患卡</p>
+        <h3 tabindex="-1">给 C13 记录专业结论</h3>
+        <ol>
+          <li>在 C13 卡片点「專業轉介與合成文件元資料」，展开表单。</li>
+          <li>把「轉介狀態」改为「已取得結論」。</li>
+          <li>专业单位、含C13的核查范围、文件索引保留合成预填值；「文件結論（不自動銷號）」保持「符合本次處置要求」。</li>
+          <li>点「記錄專業轉介」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>C13的「專業」一行显示「已取得結論／符合本次處置要求」。这不等于已整改或已销号。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">保持学校角色 · C05 隐患卡</p>
+        <h3 tabindex="-1">提交 C05 的整改资料</h3>
+        <ol>
+          <li>回到标题含「／C05」的隐患卡。</li>
+          <li>保留预填的「整改措施（合成，可修改）」和「整改證據索引（合成）」。</li>
+          <li>点 C05 卡片里的「提交整改待複查」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>C05变成「待複查」。学校提交的是整改资料，要等第三方复查，不是自行销号。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">保持学校角色 · C13 隐患卡</p>
+        <h3 tabindex="-1">提交 C13 的整改资料</h3>
+        <ol>
+          <li>回到标题含「／C13」的隐患卡，确认「專業」一行已有符合要求的结论。</li>
+          <li>保留预填的整改措施和整改证据索引。</li>
+          <li>点 C13 卡片里的「提交整改待複查」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>C05、C13两张卡片现在都显示「待複查」。下一步换第三方。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">换角色：第三方 · 巡檢服務專員</p>
+        <h3 tabindex="-1">复查 C05，让第一项销号</h3>
+        <ol>
+          <li>在操作区，「登出」；用「巡檢服務專員」进入。点左侧「巡檢任務」，找到同一 TASK 编号。</li>
+          <li>在标题含「／C05」的卡片内，「複查結論」选「通過」。方式、证据和理由保留合成预填值。</li>
+          <li>点 C05 卡片里的「記錄複查（已用0/1次）」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>C05变为「已銷號」。C13还没复查，继续下一步。</p>
+        <p class="guide-warning">本流程使用默认计划，每项只有1次复查机会。请选「通過」；不要为了试按钮选退回或证据不足，它们也会消耗这1次机会。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">保持第三方角色 · C13 隐患卡</p>
+        <h3 tabindex="-1">复查 C13，让第二项销号</h3>
+        <ol>
+          <li>找到标题含「／C13」的隐患卡，确认状态是「待複查」，且「專業」一行已有符合要求的结论。</li>
+          <li>「複查結論」选「通過」，其他合成预填内容不改。</li>
+          <li>点 C13 卡片里的「記錄複查（已用0/1次）」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>C13也变成「已銷號」。没有匹配C13且符合要求的专业结论时，系统不会允许通过；请回学校补做第12步，不要重复提交复查。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="inspection" hidden>
+        <p class="guide-role">保持第三方角色 · 核对结果即可</p>
+        <h3 tabindex="-1">这一条流程做完了，看这四处</h3>
+        <ol>
+          <li>同一任务标题下显示「現場交付：已驗收」。</li>
+          <li>C05、C13两张隐患卡都显示「已銷號」。</li>
+          <li>任务显示「約定服務已履約（非風險清零）」。意思是这张任务约定的工作已做完。</li>
+          <li>任务预算仍标「未付款」。演示没有支付功能，不需要再找付款按钮。</li>
+        </ol>
+        <p class="guide-result"><strong>到这里就结束：</strong>本次只做青禾主校区，不代表分校区也检查完了。背景学校仍有逾期问题是正常的，不要为了“清零”修改它们。</p>
+        <p>想继续演示投保？在上方「你要做什么？」选「② 投保与承保」。不用重设，巡检与投保互不作为前提。</p>
+      </section>
+
+      <section class="guide-step" data-guide-topic="insurance" hidden>
+        <p class="guide-role">学校 · 青禾中學安全管理員</p>
+        <h3 tabindex="-1">学校提交一份投保申请</h3>
+        <ol>
+          <li>在操作区，若已登录其他角色先「登出」。用「青禾中學安全管理員」进入，点左侧「保險產品與投保」。</li>
+          <li>找到第一张产品卡：保险甲的「校園責任綜合方案」。点这张卡里的「選擇並提交投保」。</li>
+          <li>点左侧「投保申請與保單」，记下新申请编号，后面只处理这份青禾申请。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>出现青禾的「待核保」申请。提交一次即可。其他公司没有可登录的核保角色，本次不要选它们。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="insurance" hidden>
+        <p class="guide-role">换角色：保险公司 · 保險核保經理</p>
+        <h3 tabindex="-1">保险公司同意承保</h3>
+        <ol>
+          <li>在操作区，「登出」；在「保險核保經理」卡片点「以此角色進入」。</li>
+          <li>点左侧「投保核保」，按刚才的申请编号找到青禾申请，不要选明德小学背景申请。</li>
+          <li>在这一行点「同意承保」。本条最短流程不选「要求補件」或「不予承保」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>申请变成「已承保」，生成演示保单。没有真实付款，也没有真实保险合同。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="insurance" hidden>
+        <p class="guide-role">换角色：主管部门 · 省級教育監管員</p>
+        <h3 tabindex="-1">看看监管覆盖数字是否更新</h3>
+        <ol>
+          <li>在操作区，「登出」；用「省級教育監管員」进入。</li>
+          <li>点左侧「監管總覽」，查看有效保障学校和覆盖率。</li>
+        </ol>
+        <p class="guide-result"><strong>从初始数据做完本流程后：</strong>有效保障学校6所变7所，覆盖率50.0%变58.3%（7/12）。这是12所合成学校的演示口径。</p>
+        <p>想演示报案，在上方选「③ 报案与理赔」。已经承保就不要再投保，也不要重设，否则新保单会被清除。</p>
+      </section>
+
+      <section class="guide-step" data-guide-topic="claim" hidden>
+        <p class="guide-role">学校 · 青禾中學安全管理員</p>
+        <h3 tabindex="-1">用刚才的保单报一个合成案件</h3>
+        <ol>
+          <li>先完成「② 投保与承保」。在操作区，若在其他角色先「登出」；用「青禾中學安全管理員」进入。</li>
+          <li>点左侧「報案與理賠」。在「提交事故通知」选青禾的新保单；日期、类型、摘要保留合成预填值。</li>
+          <li>点「提交合成事故通知」。在下方「理賠進度記錄」记下新案件编号，后面都找这一行。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>新案件显示「待受理」。如果页面说没有有效保单，先回「②」完成承保，不要重设数据。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="claim" hidden>
+        <p class="guide-role">换角色：保险公司 · 保險核保經理</p>
+        <h3 tabindex="-1">先受理，再让学校补资料</h3>
+        <ol>
+          <li>在操作区，「登出」；用「保險核保經理」进入，点左侧「報案理賠」。</li>
+          <li>找到刚才的青禾案件编号，在这一行点「更新為查勘中」。</li>
+          <li>同一行按钮更新后，再点「更新為待補充資料」。到这里停下，先不要点「更新為核定處理中」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>同一案件显示「待補充資料」。下一步换学校补资料。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="claim" hidden>
+        <p class="guide-role">换角色：学校 · 青禾中學安全管理員</p>
+        <h3 tabindex="-1">学校补交合成资料</h3>
+        <ol>
+          <li>在操作区，「登出」；用「青禾中學安全管理員」进入，点左侧「報案與理賠」。</li>
+          <li>按记下的案件编号找到同一行，点「提交合成補充資料」。不要再次提交新的事故通知。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>这个案件从「待補充資料」回到「查勘中」。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="claim" hidden>
+        <p class="guide-role">换角色：保险公司 · 保險核保經理</p>
+        <h3 tabindex="-1">把同一个案件推进到结案</h3>
+        <ol>
+          <li>在操作区，「登出」；用「保險核保經理」进入，点左侧「報案理賠」，找到同一案件编号。</li>
+          <li>依次点击这一行更新后的按钮：「更新為待補充資料」→「更新為核定處理中」→「更新為已結案」。</li>
+        </ol>
+        <p class="guide-result"><strong>完成标志：</strong>同一案件显示「已結案」。当前Demo的按钮按固定顺序推进，补件返回查勘后会再经过一次「待補充資料」；本步不必再换学校补交。</p>
+      </section>
+      <section class="guide-step" data-guide-topic="claim" hidden>
+        <p class="guide-role">换角色：主管部门 · 省級教育監管員</p>
+        <h3 tabindex="-1">查看回流的案件摘要</h3>
+        <ol>
+          <li>在操作区，「登出」；用「省級教育監管員」进入。</li>
+          <li>点左侧「報案理賠摘要」，按案件编号找到青禾这一行，确认「已結案」。</li>
+          <li>要看处理记录，展开下方该案件的进度历程；学校也能在自己的「報案與理賠」查看。</li>
+        </ol>
+        <p class="guide-result"><strong>本条流程结束：</strong>这里只展示合成案件进度，没有判定事故责任或执行真实赔款支付。</p>
+      </section>
+
+      <section class="guide-step" data-guide-topic="help" hidden>
+        <h3 tabindex="-1">找不到按钮，先对照这里</h3>
+        <ul>
+          <li><strong>不知道接着做哪步：</strong>看同一TASK任务的状态。「待接單」从巡检第2步继续；「執行中」且未填结果从第3步继续；已提交v1且C02未检从第5步继续；已提交v2但未验收从第8步继续；「現場交付：已驗收」从第9步学校收悉继续。已经做过的确认、整改或复查可跳过。</li>
+          <li><strong>找不到验收区：</strong>必须登录主管部门，且当前报告已提交。若已显示「已驗收」，验收区隐藏是正常的；若第三方只保存了草稿，先完成提交。</li>
+          <li><strong>找不到学校或第三方的按钮：</strong>检查右上角登录角色和TASK编号；学校先确认责任才出现整改表单，第三方等学校提交后才出现复查表单。C13还需要匹配且符合要求的专业结论。</li>
+          <li><strong>复查次数用完：</strong>默认计划每项上限1次，退回和证据不足也计次。若想演示多轮，须在派单前由主管部门新建计划，把「每隱患複查上限」设为3，建立草稿、批准、生效后再派单；不要对旧任务反复提交。</li>
+          <li><strong>想从头重来：</strong>在操作区，右上角「登出」，登录页点「重設演示資料」并确认。会清除当前v2操作，旧v1保留。任务编号可能变化，重新记录；阅读步骤请手动选回第1步。</li>
+          <li><strong>数据与离线：</strong>全程用同一浏览器、同一页面。刷新通常保留业务数据，换设备、浏览器、移动HTML或清理存储不会自动同步；ZIP不含你的操作记录。存储异常须检查浏览器权限，不会静默覆盖损坏存档。</li>
+        </ul>
+        <details><summary>演示边界与术语（需要时再看）</summary>
+          <p>全部学校、产品、事故、证据索引和文件均为合成样例。不要输入真实学生信息。固定业务日期为2026-10-25，不随电脑日期变化；没有真实核保、支付、理赔、生产身份认证或服务器持久化。</p>
+          <p>计划是派单依据，保单不是派单前提；有效保单也不自动授权保险公司代办。主管部门的「平台服務管理（演示代辦）」不代表现实采购、运营或财务权限。</p>
+          <p>现场验收＝确认报告交付；整改＝学校处理问题；复查通过后销号＝该项问题闭环；约定服务履约＝任务约定工作完成；付款单独记录，Demo不执行付款。它们不能互相代替，收悉也不是承认法律责任。</p>
+          <p>只巡检主校区不代表全校区覆盖。22项清单不是全国法定标准；20%服务资金安排是合成假设，不是保费比例或政策要求。背景学校有已验收但仍逾期、待复查、待专业核查的事项，不表示系统出错。</p>
+          <p>校方责任险的投保／被保险主体是学校，核心是学校依法应承担的赔偿责任；不等于学生意外险或生产安全责任险。服务范围依地区项目及合同，不是全国强制附带服务。「学安无忧」身份待核验，不视为全国统一险种或已验证产品；案件数量不等同责任或安全排名。</p>
+        </details>
+      </section>
+    </div>
+    <footer>
+      <button type="button" data-action="guideNavigate">带我到这一步 · 箭头提示</button>
+      <p id="guide-location" role="status" aria-live="polite"></p>
+      <span id="guide-progress" role="status" aria-live="polite"></span>
+      <button type="button" data-action="guidePrevious">上一步</button>
+      <button type="button" data-action="guideNext">下一步</button>
+      <button type="button" class="guide-operate" data-action="closeGuide">收起说明书，扩大操作区</button>
+      <p>定位成功后收起指南，按箭头操作；不会自动提交。从右下角展开继续原步骤。</p>
+    </footer>
+    <span class="guide-resize" data-guide-resize="n" aria-hidden="true"></span>
+    <span class="guide-resize" data-guide-resize="s" aria-hidden="true"></span>
+    <span class="guide-resize" data-guide-resize="e" aria-hidden="true"></span>
+    <span class="guide-resize" data-guide-resize="w" aria-hidden="true"></span>
+    <span class="guide-resize" data-guide-resize="nw" aria-hidden="true"></span>
+    <span class="guide-resize" data-guide-resize="ne" aria-hidden="true"></span>
+    <span class="guide-resize" data-guide-resize="sw" aria-hidden="true"></span>
+    <span class="guide-resize" data-guide-resize="se" aria-hidden="true"></span>
+  </dialog>
+</body>
+</html>

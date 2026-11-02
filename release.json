@@ -1,0 +1,15 @@
+{
+  "source_revision": "f36c28bb8dfb5ccfc077a209a4f53d47230197b6",
+  "exported_at": "2026-11-02T12:07:49.028248+00:00",
+  "guide_revision": "windows-controls-v3",
+  "assets": {
+    "index.html": "07beba487e90783ddcc6ba4bf7efad8728ab96cfaab80e757652600ab2b3118b",
+    "styles.css": "63bb37b5adfff919bced808be0eeb171e8f205f924d70eef90810bfb5760e4a1",
+    "data.js": "de034e585453d6d3e924b0bd1ec2c06e7f719841b00141eb707430690baadaa2",
+    "reports.js": "9f229e681c25dffa457a305f38997762dacae5bd4d32b51a69d04df074db0194",
+    "workflows.js": "eb1095555cc91ecbf21f151e382fff12608727ed289636fdaad675e689a4934e",
+    "campus.js": "c2faaf9afcd2a79366db569761a3f3fa8c6930c2517a07becafb2502db45ac73",
+    "campus-pages.js": "5172b96da88d818b42fe2eb084e520b7099811d8c2c591fce2d321dc6abfee15",
+    "app.js": "b43fc57d1058bbb7b8dc17201be351ded55543912bc9f51206eeed54cbdb10a8"
+  }
+}
