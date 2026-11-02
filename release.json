@@ -1,15 +1,15 @@
 {
-  "source_revision": "f36c28bb8dfb5ccfc077a209a4f53d47230197b6",
-  "exported_at": "2026-11-02T12:07:49.028248+00:00",
+  "source_revision": "940b3151fb0462668cd7ee9e71de021e20bc66cb",
+  "exported_at": "2026-11-02T12:12:09.487815+00:00",
   "guide_revision": "windows-controls-v3",
   "assets": {
-    "index.html": "07beba487e90783ddcc6ba4bf7efad8728ab96cfaab80e757652600ab2b3118b",
-    "styles.css": "63bb37b5adfff919bced808be0eeb171e8f205f924d70eef90810bfb5760e4a1",
-    "data.js": "de034e585453d6d3e924b0bd1ec2c06e7f719841b00141eb707430690baadaa2",
-    "reports.js": "9f229e681c25dffa457a305f38997762dacae5bd4d32b51a69d04df074db0194",
-    "workflows.js": "eb1095555cc91ecbf21f151e382fff12608727ed289636fdaad675e689a4934e",
-    "campus.js": "c2faaf9afcd2a79366db569761a3f3fa8c6930c2517a07becafb2502db45ac73",
-    "campus-pages.js": "5172b96da88d818b42fe2eb084e520b7099811d8c2c591fce2d321dc6abfee15",
-    "app.js": "b43fc57d1058bbb7b8dc17201be351ded55543912bc9f51206eeed54cbdb10a8"
+    "index.html": "d57237571904c2962e0b0d2f4f0c5c1acd782c4f615a704c58953dae63794cd2",
+    "styles.css": "c83bd0eed05a20f1bf4bf5af531f4e33ca9056705076f5fce8aba7c5a0b58268",
+    "data.js": "7df9abee541b6f1bd9dc11a65a18d8769929b9327749eb3bdefc726912ea7360",
+    "reports.js": "55f5b37e2cd168451c2cdeef37c07f1800bb82d88bc76eed86dbc829a26792a4",
+    "workflows.js": "f64f12122dea0b571d8c9332dd74f36894aff0ba29b01f6a5c35e754fe7bf1c5",
+    "campus.js": "684b6b3fae11fa92f504002e7ef2cd4ef4fba31f0ccee92cf36fffb440dc2d3c",
+    "campus-pages.js": "4c6aac0aaec07dd2b52bb6c35b0995aabb6d9906ba99ac7116d0d9e9d740e7e8",
+    "app.js": "d3018b2d85b1d040a8ff27e818c34e9581191f40200952a5658e1d844f8b91f7"
   }
 }
